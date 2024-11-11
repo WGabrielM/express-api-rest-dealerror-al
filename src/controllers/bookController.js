@@ -1,4 +1,4 @@
-import { book } from "../models/index.js";
+import { authors, book } from "../models/index.js";
 import NotFound from "../errors/NotFound.js";
 
 class BookController {
@@ -74,18 +74,23 @@ class BookController {
 
   static async listBookByFilter(req, res, next) {
     try {
-      const search = searchProcess(req.query);
-      const booksByPublisher = await book.find(search);
-      res.status(200).json(booksByPublisher);
+      const search = await searchProcess(req.query);
+
+      if (search !== null) {
+        const booksByPublisher = await book.find(search).populate("author");
+        res.status(200).json(booksByPublisher);
+      } else {
+        res.status(200).send([]);
+      }
     } catch (error) {
       next(error);
     }
   }
 }
 
-function searchProcess(params) {
-  const { publisher, title, minPages, maxPages } = params;
-  const search = {};
+async function searchProcess(params) {
+  const { publisher, title, minPages, maxPages, authorName } = params;
+  let search = {};
 
   const regex = new RegExp(title, "i");
 
@@ -98,6 +103,17 @@ function searchProcess(params) {
   if (minPages) search.pages.$gte = minPages;
   // lte = Less than or equal
   if (maxPages) search.pages.$lte = maxPages;
+
+  if (authorName) {
+    const author = await authors.findOne({ name: authorName });
+    const authorId = author._id;
+
+    if (author !== null) {
+      search.author = authorId;
+    } else {
+      search = null;
+    }
+  }
 
   return search;
 }

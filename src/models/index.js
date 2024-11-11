@@ -1,4 +1,4 @@
 import book from "./Book.js";
-import { author } from "./Author.js";
+import { authors } from "./Author.js";
 
-export { author, book };
+export { authors, book };
