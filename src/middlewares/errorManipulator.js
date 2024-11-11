@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
 
-import InternalServerError from "../errors/InternalServerError.js";
+import NotFound from "../errors/NotFound.js";
 import WrongRequest from "../errors/WrongRequest.js";
 import ValidationError from "../errors/ValidationError.js";
-import NotFound from "../errors/NotFound.js";
+import InternalServerError from "../errors/InternalServerError.js";
 
+// eslint-disable-next-line no-unused-vars
 export default function errorManipulator(erro, req, res, next) {
+  console.log(erro);
+  
   if (erro instanceof mongoose.Error.CastError) {
     new WrongRequest().sendResponse(res);
   } else if (erro instanceof mongoose.Error.ValidationError) {
@@ -13,6 +16,6 @@ export default function errorManipulator(erro, req, res, next) {
   } else if (erro instanceof NotFound) {
     erro.sendResponse(res);
   } else {
-    new InternalServerError.sendResponse(res);
+    new InternalServerError().sendResponse(res);
   }
 }

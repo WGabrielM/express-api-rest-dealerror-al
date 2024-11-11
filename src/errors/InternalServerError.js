@@ -5,8 +5,8 @@ class InternalServerError extends Error {
     this.status = status;
   }
 
-  sendResponse() {
-    resizeBy.status(this.status).send({
+  sendResponse(res) {
+   res.status(this.status).send({
       message: this.message,
       status: this.status,
     });

@@ -1,16 +1,13 @@
-import {book} from "../models/index.js";
+import { book } from "../models/index.js";
 import NotFound from "../errors/NotFound.js";
 
 class BookController {
-  
   static listBooks = async (req, res) => {
     try {
       const listBooks = await book.find().populate("author").exec();
       res.status(200).json(listBooks);
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: `${error.message} - Request List Book Fail` });
+      next(error);
     }
   };
 
@@ -35,9 +32,9 @@ class BookController {
 
   static addBook = async (req, res, next) => {
     try {
-      let book = new book(req.body);
+      let newBook = new book(req.body);
 
-      const bookFinded = await book.save();
+      const bookFinded = await newBook.save();
 
       res.status(201).send(bookFinded.toJSON());
     } catch (error) {
@@ -75,11 +72,21 @@ class BookController {
     }
   };
 
-  static async listBookByPublisher(req, res, next) {
-    const publisher = req.query.publisher;
+  static async listBookByFilter(req, res, next) {
+    const { publisher, title } = req.query;
+
+    const regex = new RegExp(title, "i");
+
+    const search = {};
+
+    if (publisher) search.publisher = publisher;
+    if (title) search.title = regex;
 
     try {
-      const booksByPublisher = await book.find({ publisher: publisher });
+      const booksByPublisher = await book.find({
+        publisher: publisher,
+        title: title,
+      });
       res.status(200).json(booksByPublisher);
     } catch (error) {
       next(error);
