@@ -5,18 +5,24 @@ import WrongRequest from "../errors/WrongRequest.js";
 class BookController {
   static listBooks = async (req, res) => {
     try {
-      let { limit = 5, page = 1 } = req.query;
+      let { limit = 5, page = 1, sorting = "_id: -1" } = req.query;
+
+      let [sortField, sort] = sorting.split(":");
 
       limit = parseInt(limit);
       page = parseInt(page);
+      order = parseInt(order);
 
-      const listBooks = await book
-        .find()
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .populate("author")
-        .exec();
-      res.status(200).json(listBooks);
+      if (limit > 0 && page > 0) {
+        const listBooks = await book
+          .listenerCount({ [sortField]: sort })
+          .find()
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .populate("author")
+          .exec();
+        res.status(200).json(listBooks);
+      }
     } catch (error) {
       next(new WrongRequest());
     }
